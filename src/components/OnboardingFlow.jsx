@@ -4,6 +4,10 @@ import { emptyProfile } from '../context/UserProfileContext.jsx';
 import FieldHint from './FieldHint.jsx';
 import { FIELD_HINTS } from '../data/fieldHints.js';
 import { parseForm16File } from '../utils/form16Parser.js';
+import { formatIndian } from '../utils/formatIndian.js';
+
+/** Non-currency fields that should NOT get comma formatting */
+const NO_FORMAT_KEYS = new Set(['currentAge', 'retirementAge']);
 
 const STEPS = [
   {
@@ -165,6 +169,16 @@ const OnboardingFlow = ({ onComplete }) => {
     setStepError('');
   };
 
+  /** Return display value: formatted with commas for currency fields, raw for age fields */
+  const displayValue = (key) => {
+    const raw = data[key];
+    if (raw === '' || raw == null) return '';
+    if (NO_FORMAT_KEYS.has(key)) return String(raw);
+    const field = STEPS.flatMap((s) => s.fields).find((f) => f.key === key);
+    if (field?.type === 'number') return formatIndian(raw);
+    return String(raw);
+  };
+
   const goNext = () => {
     const err = validateStep(step, data);
     if (err) {
@@ -221,7 +235,7 @@ const OnboardingFlow = ({ onComplete }) => {
             </div>
             <input
               type="text"
-              value={data.name}
+              value={displayValue('name')}
               onChange={(e) => handleChange('name', e.target.value)}
               style={inputStyle}
               autoComplete="name"
@@ -240,7 +254,7 @@ const OnboardingFlow = ({ onComplete }) => {
             <input
               type="text"
               inputMode="numeric"
-              value={data.currentAge}
+              value={displayValue('currentAge')}
               onChange={(e) => handleChange('currentAge', e.target.value)}
               style={inputStyle}
               placeholder="e.g. 30"
@@ -258,7 +272,7 @@ const OnboardingFlow = ({ onComplete }) => {
             <input
               type="text"
               inputMode="numeric"
-              value={data.retirementAge}
+              value={displayValue('retirementAge')}
               onChange={(e) => handleChange('retirementAge', e.target.value)}
               style={inputStyle}
               placeholder="e.g. 55"
@@ -286,7 +300,7 @@ const OnboardingFlow = ({ onComplete }) => {
             <input
               type="text"
               inputMode="numeric"
-              value={data[f.key]}
+              value={displayValue(f.key)}
               onChange={(e) => handleChange(f.key, e.target.value)}
               style={inputStyle}
               placeholder={f.required ? 'Required' : 'Optional'}

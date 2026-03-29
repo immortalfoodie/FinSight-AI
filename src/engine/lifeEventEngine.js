@@ -44,6 +44,175 @@ function compareFireImpact(profile, adjustedProfileFields) {
   };
 }
 
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function parseIndianAmount(raw) {
+  if (!raw) return 0;
+  const text = String(raw).toLowerCase().trim().replace(/[,₹]/g, '');
+  const numMatch = text.match(/(\d+(?:\.\d+)?)/);
+  if (!numMatch) return 0;
+  const base = Number(numMatch[1]) || 0;
+  if (text.includes('crore') || text.includes('cr')) return Math.round(base * 10000000);
+  if (text.includes('lakh') || text.includes('lac') || text.includes('lk')) return Math.round(base * 100000);
+  if (text.includes('k')) return Math.round(base * 1000);
+  return Math.round(base);
+}
+
+function detectGoalFromText(goalText = '') {
+  const t = String(goalText).toLowerCase();
+  const currentAgeMatch = t.match(/\b(?:i am|i'm|im)\s+(\d{1,2})\b/);
+  const targetAgeMatch = t.match(/\b(?:at|by|before|when i am|when i'm)\s+(\d{1,2})\b/);
+  const yearsMatch = t.match(/\bin\s+(\d{1,2})\s+years?\b/);
+
+  const explicitAmountMatch = t.match(/(?:₹|rs\.?\s*)\s*[\d,]+(?:\.\d+)?(?:\s*(?:lakh|lac|lk|crore|cr|k))?/i)
+    || t.match(/\b\d+(?:\.\d+)?\s*(?:lakh|lac|lk|crore|cr|k)\b/i);
+
+  const currentAge = currentAgeMatch ? Number(currentAgeMatch[1]) : null;
+  const targetAge = targetAgeMatch ? Number(targetAgeMatch[1]) : null;
+  const yearsToGoal = yearsMatch
+    ? Number(yearsMatch[1])
+    : (currentAge != null && targetAge != null && targetAge > currentAge ? targetAge - currentAge : null);
+
+  let goalType = 'general_goal';
+  if (/marri|wedding|shaadi/.test(t)) goalType = 'marriage';
+  else if (/house|home|flat|property/.test(t)) goalType = 'home';
+  else if (/baby|child|kid|children/.test(t)) goalType = 'child';
+  else if (/retire|retirement/.test(t)) goalType = 'retirement';
+  else if (/car|vehicle/.test(t)) goalType = 'car';
+
+  return {
+    goalType,
+    currentAge,
+    targetAge,
+    yearsToGoal: yearsToGoal != null ? clamp(yearsToGoal, 1, 40) : null,
+    statedAmount: explicitAmountMatch ? parseIndianAmount(explicitAmountMatch[0]) : 0,
+  };
+}
+
+function monthlySIPForGoal(targetAmount, years, expectedReturnAnnual = 0.12) {
+  if (targetAmount <= 0 || years <= 0) return 0;
+  const r = expectedReturnAnnual / 12;
+  const n = years * 12;
+  const factor = (Math.pow(1 + r, n) - 1) / r;
+  if (!Number.isFinite(factor) || factor <= 0) return 0;
+  return Math.round(targetAmount / factor);
+}
+
+function buildCustomGoalPlan(profile, goalText) {
+  const parsed = detectGoalFromText(goalText);
+  const inflationRate = 0.06;
+  const expectedReturn = 0.12;
+  const years = parsed.yearsToGoal || 8;
+
+  const defaultCorpusByGoal = {
+    marriage: 1500000,
+    home: 3000000,
+    child: 2000000,
+    retirement: 5000000,
+    car: 1000000,
+    general_goal: 1200000,
+  };
+
+  const baseToday = parsed.statedAmount > 0 ? parsed.statedAmount : defaultCorpusByGoal[parsed.goalType];
+  const targetCorpus = Math.round(baseToday * Math.pow(1 + inflationRate, years));
+  const requiredMonthlySIP = monthlySIPForGoal(targetCorpus, years, expectedReturn);
+
+  const currentSavings = Math.max(0, (profile.monthlyIncome || 0) - (profile.monthlyExpenses || 0));
+  const investableNow = Math.max(0, currentSavings - (profile.monthlySIP || 0));
+  const shortfall = Math.max(0, requiredMonthlySIP - investableNow);
+
+  const emergencyGap = Math.max(0, (profile.monthlyExpenses || 0) * 6 - (profile.emergencyFund || 0));
+  const bucketBase = requiredMonthlySIP;
+  const safety = Math.round(bucketBase * 0.25);
+  const growth = Math.round(bucketBase * 0.6);
+  const taxSave = Math.max(0, bucketBase - safety - growth);
+
+  const fire = compareFireImpact(profile, { monthlyExpenses: (profile.monthlyExpenses || 0) + Math.round(requiredMonthlySIP * 0.2) });
+
+  const goalLabelMap = {
+    marriage: 'marriage goal',
+    home: 'home goal',
+    child: 'child goal',
+    retirement: 'retirement bridge goal',
+    car: 'vehicle goal',
+    general_goal: 'financial goal',
+  };
+  const goalLabel = goalLabelMap[parsed.goalType] || 'financial goal';
+
+  return {
+    summary: `For your ${goalLabel} in ~${years} years, target corpus is ${`₹${targetCorpus.toLocaleString('en-IN')}`}. Estimated SIP needed: ${`₹${requiredMonthlySIP.toLocaleString('en-IN')}`}/month.`,
+    detailedBreakdown: [
+      `Interpreted from text: current age ${parsed.currentAge ?? profile.currentAge || 'N/A'}, target age ${parsed.targetAge ?? 'N/A'}, horizon ${years} years.`,
+      `Goal in today's value: ₹${baseToday.toLocaleString('en-IN')} → inflation-adjusted target: ₹${targetCorpus.toLocaleString('en-IN')}.`,
+      `Current free monthly surplus after expenses/SIPs: ₹${Math.max(0, investableNow).toLocaleString('en-IN')}. Gap to required SIP: ₹${shortfall.toLocaleString('en-IN')}/month.`,
+    ],
+    reasoning: [
+      'Goal corpus is inflation-adjusted first, then SIP is solved using monthly compounding.',
+      'Allocation order prioritizes downside protection (emergency + debt) before long-horizon equity.',
+    ],
+    assumptions: [
+      'Expected return 12% p.a. and inflation 6% p.a. are heuristic defaults.',
+      "If your goal amount is explicitly written in prompt, it overrides model defaults.",
+    ],
+    sensitivity: [
+      'If return is 10% instead of 12%, required SIP rises materially — revisit every 6 months.',
+      'If timeline shortens by 1–2 years, increase SIP and shift more to debt in final 24 months.',
+    ],
+    actionPlan: [
+      `Automate SIP of ₹${requiredMonthlySIP.toLocaleString('en-IN')}/month tagged to "${goalLabel}".`,
+      emergencyGap > 0
+        ? `First close emergency fund gap of ₹${emergencyGap.toLocaleString('en-IN')} before increasing equity risk.`
+        : 'Emergency fund already near target; maintain 6 months expenses in liquid funds.',
+      shortfall > 0
+        ? `Bridge SIP gap of ₹${shortfall.toLocaleString('en-IN')}/month by cutting discretionary spends or increasing income.`
+        : 'Current surplus can support this goal SIP without stress.',
+    ],
+    followUpQuestions: [
+      'Do you want a simple, moderate, or aggressive allocation for this goal?',
+    ],
+    warnings: [
+      'Marriage and life-event costs vary by city/family expectations; update goal amount with realistic estimates.',
+    ],
+    allocationStrategy: [
+      { bucket: 'Safety (liquid + short debt)', percent: 25, amount: safety, rationale: 'Protect near-term certainty and event timing.' },
+      { bucket: 'Growth (index/flexi-cap equity)', percent: 60, amount: growth, rationale: 'Primary compounding engine for multi-year horizon.' },
+      { bucket: 'Tax-efficient sleeve (ELSS/PPF/EPF)', percent: 15, amount: taxSave, rationale: 'Improve post-tax returns when eligible.' },
+    ],
+    taxImpact: {
+      items: [
+        { label: 'Illustrative annual tax edge from tax-efficient sleeve', amount: Math.round(taxSave * 12 * 0.2) },
+      ],
+      approxTotalTaxSaved: Math.round(taxSave * 12 * 0.2),
+    },
+    impact: {
+      savingsRateBefore: profile.monthlyIncome > 0 ? ((profile.monthlyIncome - profile.monthlyExpenses) / profile.monthlyIncome) : 0,
+      savingsRateAfter: profile.monthlyIncome > 0 ? ((profile.monthlyIncome - profile.monthlyExpenses - requiredMonthlySIP) / profile.monthlyIncome) : 0,
+      retirementAgeDeltaYears: fire.retirementAgeDeltaYears,
+      netWorthDelta: 0,
+      requiredSIPDelta: requiredMonthlySIP - (profile.monthlySIP || 0),
+      impactDashboard: {
+        savingsRateBeforePct: Math.round(((profile.monthlyIncome > 0 ? ((profile.monthlyIncome - profile.monthlyExpenses) / profile.monthlyIncome) : 0) * 1000)) / 10,
+        savingsRateAfterPct: Math.round(((profile.monthlyIncome > 0 ? ((profile.monthlyIncome - profile.monthlyExpenses - requiredMonthlySIP) / profile.monthlyIncome) : 0) * 1000)) / 10,
+        taxSavedApprox: Math.round(taxSave * 12 * 0.2),
+        retirementAgeDeltaYears: fire.retirementAgeDeltaYears,
+        netWorthGrowth: 0,
+        requiredSIPChange: requiredMonthlySIP - (profile.monthlySIP || 0),
+      },
+    },
+    actions: [
+      { action: 'Monthly goal SIP', amount: requiredMonthlySIP },
+      { action: 'Safety bucket monthly', amount: safety },
+      { action: 'Growth bucket monthly', amount: growth },
+      { action: 'Tax-efficient monthly', amount: taxSave },
+    ],
+    advice: [],
+    disclaimer: DISCLAIMER,
+    explanationLog: ['LifeEvent_Agent: custom_goal parser + inflation-adjusted corpus + SIP solver.'],
+  };
+}
+
 /**
  * @param {{ event: string, profile: object }} data
  */
@@ -246,6 +415,18 @@ export function computeLifeEventPlan(data) {
       followUpQuestions.push('Any severance or notice-period income? Add to EF before pausing SIPs.');
       explanationLog.push('Job loss: runway math + behaviour guardrails.');
       break;
+    }
+
+    case 'custom_goal': {
+      const goalPlan = buildCustomGoalPlan(profile, profile.goalText || '');
+      return {
+        event,
+        ...goalPlan,
+        advice: [
+          ...goalPlan.actionPlan,
+          ...goalPlan.detailedBreakdown,
+        ],
+      };
     }
 
     default: {

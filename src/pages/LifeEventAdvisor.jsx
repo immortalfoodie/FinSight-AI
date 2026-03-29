@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { Gift, Heart, Baby, Building2, Briefcase, AlertTriangle, ArrowRight, Banknote, PieChart, Scale, Sparkles, TrendingUp } from 'lucide-react';
+import { Gift, Heart, Baby, Building2, Briefcase, AlertTriangle, ArrowRight, Banknote, PieChart, Scale, Sparkles, TrendingUp, MessageSquareText } from 'lucide-react';
 import { useUserProfile } from '../context/UserProfileContext';
 import { useAdvisor } from '../context/AdvisorContext';
 import { orchestrate } from '../agents/orchestrator';
+import { formatIndian } from '../utils/formatIndian.js';
 
 const EVENTS = [
   { id: 'bonus', label: 'Received a Bonus', icon: Gift, color: '#f5b041', desc: 'Optimize your windfall for tax savings, investments, and goals.' },
@@ -24,6 +25,8 @@ const LifeEventAdvisor = ({ addLog }) => {
   const [amountError, setAmountError] = useState('');
   const [result, setResult] = useState(null);
   const [computing, setComputing] = useState(false);
+  const [goalPrompt, setGoalPrompt] = useState('');
+  const [goalError, setGoalError] = useState('');
 
   const runAnalysis = useCallback(
     (eventId) => {
@@ -82,6 +85,31 @@ const LifeEventAdvisor = ({ addLog }) => {
     }
   };
 
+  const runGoalAdvisor = useCallback(() => {
+    const text = String(goalPrompt || '').trim();
+    if (!text) {
+      setGoalError('Please type your goal in plain text before generating strategy.');
+      return;
+    }
+    setGoalError('');
+    setSelectedEvent('custom_goal');
+    setComputing(true);
+    setResult(null);
+    const data = {
+      event: 'custom_goal',
+      profile: {
+        ...profile,
+        goalText: text,
+      },
+    };
+    setTimeout(() => {
+      const r = orchestrate('life_event', data, addLog);
+      setResult(r);
+      setComputing(false);
+      markAreaOptimized('life');
+    }, 400);
+  }, [goalPrompt, profile, addLog, markAreaOptimized]);
+
   const dash = result?.impact?.impactDashboard;
   const structured = result?.structured;
 
@@ -90,6 +118,50 @@ const LifeEventAdvisor = ({ addLog }) => {
       <div>
         <h2 style={{ marginBottom: '0.35rem' }}>Life Event Financial Advisor</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', lineHeight: 1.6, fontWeight: 400 }}>Allocation strategy, tax heuristics, and FIRE impact vs your baseline — not generic copy.</p>
+      </div>
+
+      <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <MessageSquareText size={17} color="var(--accent-gold)" />
+          <h3 style={{ margin: 0, fontSize: '0.95rem' }}>Goal Chat Advisor</h3>
+        </div>
+        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.83rem' }}>
+          Type naturally, for example: "I am 21 right now and plan to get married at 29. Give me investment strategy."
+        </p>
+        <textarea
+          value={goalPrompt}
+          onChange={(e) => {
+            setGoalPrompt(e.target.value);
+            setGoalError('');
+          }}
+          placeholder="Describe your goal in simple text..."
+          rows={4}
+          style={{
+            width: '100%',
+            resize: 'vertical',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '8px',
+            padding: '0.75rem 0.9rem',
+            color: '#fff',
+            fontFamily: 'inherit',
+            fontSize: '0.87rem',
+            lineHeight: 1.5,
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              runGoalAdvisor();
+            }
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Tip: press Ctrl/Cmd + Enter to run</span>
+          <button type="button" className="btn btn-primary" onClick={runGoalAdvisor}>
+            Generate strategy <ArrowRight size={14} />
+          </button>
+        </div>
+        {goalError && <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--danger)' }}>{goalError}</p>}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
@@ -128,10 +200,10 @@ const LifeEventAdvisor = ({ addLog }) => {
             </label>
             <input
               id="life-event-amount"
-              type="number"
-              min={1}
-              value={extraInput}
-              onChange={(e) => { setExtraInput(e.target.value); setAmountError(''); }}
+              type="text"
+              inputMode="numeric"
+              value={extraInput === '' ? '' : formatIndian(extraInput)}
+              onChange={(e) => { const v = e.target.value.replace(/[₹,\s]/g, ''); if (v === '' || /^\d*$/.test(v)) { setExtraInput(v); setAmountError(''); } }}
               onKeyDown={(e) => {
                 if (e.key !== 'Enter' || e.shiftKey) return;
                 e.preventDefault();

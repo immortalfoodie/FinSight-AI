@@ -5,6 +5,7 @@ import { orchestrate } from '../agents/orchestrator';
 import { useAdvisor } from '../context/AdvisorContext';
 import { MUTUAL_FUND_NAMES } from '../data/mutualFundNames.js';
 import { parsePortfolioStatementFile } from '../utils/portfolioStatementParser.js';
+import { formatIndian } from '../utils/formatIndian.js';
 
 const fmtINR = (v) => `₹${Math.round(v).toLocaleString('en-IN')}`;
 
@@ -193,10 +194,10 @@ const PortfolioXRay = ({ addLog }) => {
                     </select>
                   </td>
                   <td style={{ padding: '0.6rem' }}>
-                    <input type="number" placeholder="0" value={h.investedValue || ''} onChange={(e) => updateHolding(i, 'investedValue', e.target.value)} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.35rem', color: '#fff', fontSize: '0.85rem', width: '100px' }} />
+                    <input type="text" inputMode="numeric" placeholder="0" value={h.investedValue ? formatIndian(h.investedValue) : ''} onChange={(e) => { const v = e.target.value.replace(/[₹,\s]/g, ''); updateHolding(i, 'investedValue', v); }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.35rem', color: '#fff', fontSize: '0.85rem', width: '100px' }} />
                   </td>
                   <td style={{ padding: '0.6rem' }}>
-                    <input type="number" placeholder="0" value={h.value || ''} onChange={(e) => updateHolding(i, 'value', e.target.value)} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.35rem', color: '#fff', fontSize: '0.85rem', width: '100px' }} />
+                    <input type="text" inputMode="numeric" placeholder="0" value={h.value ? formatIndian(h.value) : ''} onChange={(e) => { const v = e.target.value.replace(/[₹,\s]/g, ''); updateHolding(i, 'value', v); }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.35rem', color: '#fff', fontSize: '0.85rem', width: '100px' }} />
                   </td>
                   <td style={{ padding: '0.6rem' }}>
                     <input

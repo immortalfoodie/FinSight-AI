@@ -8,6 +8,7 @@ import { computeFirePlan, validateFireInputs } from '../engine/fireEngine.js';
 import { enrichFirePlan } from '../engine/reasoningLayer.js';
 import FieldHint from '../components/FieldHint.jsx';
 import { FIELD_HINTS } from '../data/fieldHints.js';
+import { formatIndian } from '../utils/formatIndian.js';
 
 const parseNum = (v) => {
   if (typeof v === 'number') return v;
@@ -55,12 +56,24 @@ const FirePlanner = ({ addLog }) => {
 
   const [sim, setSim] = useState(null);
 
+  const FIRE_NO_FMT = new Set(['currentAge', 'retirementAge', 'expectedReturn', 'inflationRate', 'sipStepUp']);
+
   const handleChange = (field, value) => {
     if (['expectedReturn', 'inflationRate', 'sipStepUp'].includes(field)) {
       if (value === '' || /^\d*\.?\d*$/.test(value)) setForm((prev) => ({ ...prev, [field]: value }));
-    } else if (value === '' || /^\d*$/.test(value)) {
-      setForm((prev) => ({ ...prev, [field]: value }));
+    } else {
+      const stripped = String(value).replace(/[₹,\s]/g, '');
+      if (stripped === '' || /^\d*$/.test(stripped)) {
+        setForm((prev) => ({ ...prev, [field]: stripped }));
+      }
     }
+  };
+
+  const displayVal = (key) => {
+    const raw = form[key];
+    if (raw === '' || raw == null) return '';
+    if (FIRE_NO_FMT.has(key)) return String(raw);
+    return formatIndian(raw);
   };
 
   const handleEnterGenerate = (e) => {
@@ -203,7 +216,7 @@ const FirePlanner = ({ addLog }) => {
               <input
                 type="text"
                 inputMode={['expectedReturn', 'inflationRate', 'sipStepUp'].includes(f.key) ? 'decimal' : 'numeric'}
-                value={form[f.key]}
+                value={displayVal(f.key)}
                 onChange={(e) => handleChange(f.key, e.target.value)}
                 onKeyDown={handleEnterGenerate}
                 style={{ ...inputStyle, fontVariantNumeric: 'tabular-nums' }}

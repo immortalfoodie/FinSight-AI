@@ -5,6 +5,7 @@ import { useAdvisor } from '../context/AdvisorContext';
 import ExplainWhy from '../components/ExplainWhy.jsx';
 import FieldHint from '../components/FieldHint.jsx';
 import { FIELD_HINTS } from '../data/fieldHints.js';
+import { formatIndian } from '../utils/formatIndian.js';
 
 const fmtINR = (v) => `₹${Math.round(v).toLocaleString('en-IN')}`;
 
@@ -77,9 +78,9 @@ const PartnerForm = memo(function PartnerForm({ data, onChange, title, color, on
           <input
             type="text"
             inputMode="numeric"
-            value={data[f.key]}
+            value={(() => { const v = data[f.key]; return v === '' || v == null ? '' : formatIndian(v); })()}
             onChange={(e) => {
-              const v = e.target.value;
+              const v = e.target.value.replace(/[₹,\s]/g, '');
               if (v === '' || /^\d*$/.test(v)) onChange(f.key, v);
             }}
             onKeyDown={(e) => {

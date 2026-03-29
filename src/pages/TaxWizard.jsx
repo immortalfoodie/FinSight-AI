@@ -11,6 +11,7 @@ import AIDisclaimer from '../components/AIDisclaimer.jsx';
 import FieldHint from '../components/FieldHint.jsx';
 import { FIELD_HINTS } from '../data/fieldHints.js';
 import { parseForm16File } from '../utils/form16Parser.js';
+import { formatIndian } from '../utils/formatIndian.js';
 
 const fmtINR = (v) => `₹${Math.round(v).toLocaleString('en-IN')}`;
 
@@ -73,10 +74,20 @@ const TaxWizard = ({ addLog }) => {
       setTaxInputError(null);
       return;
     }
-    if (value === '' || /^\d*$/.test(value)) {
-      setForm((prev) => ({ ...prev, [field]: value }));
+    const stripped = String(value).replace(/[₹,\s]/g, '');
+    if (stripped === '' || /^\d*$/.test(stripped)) {
+      setForm((prev) => ({ ...prev, [field]: stripped }));
       setTaxInputError(null);
     }
+  };
+
+  /** Age fields stay raw, currency fields get Indian commas */
+  const NO_FMT = new Set(['currentAge']);
+  const displayVal = (key) => {
+    const raw = form[key];
+    if (raw === '' || raw == null) return '';
+    if (NO_FMT.has(key)) return String(raw);
+    return formatIndian(raw);
   };
 
   const handleEnterCompute = (e) => {
@@ -260,7 +271,7 @@ const TaxWizard = ({ addLog }) => {
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={form[f.key]}
+                  value={displayVal(f.key)}
                   onChange={(e) => handleChange(f.key, e.target.value)}
                   style={{ ...inputStyle, fontVariantNumeric: 'tabular-nums' }}
                   placeholder="—"
