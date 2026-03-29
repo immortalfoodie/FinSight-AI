@@ -144,7 +144,7 @@ function buildCustomGoalPlan(profile, goalText) {
   return {
     summary: `For your ${goalLabel} in ~${years} years, target corpus is ${`₹${targetCorpus.toLocaleString('en-IN')}`}. Estimated SIP needed: ${`₹${requiredMonthlySIP.toLocaleString('en-IN')}`}/month.`,
     detailedBreakdown: [
-      `Interpreted from text: current age ${parsed.currentAge ?? profile.currentAge || 'N/A'}, target age ${parsed.targetAge ?? 'N/A'}, horizon ${years} years.`,
+      `Interpreted from text: current age ${(parsed.currentAge ?? profile.currentAge) || 'N/A'}, target age ${parsed.targetAge ?? 'N/A'}, horizon ${years} years.`,
       `Goal in today's value: ₹${baseToday.toLocaleString('en-IN')} → inflation-adjusted target: ₹${targetCorpus.toLocaleString('en-IN')}.`,
       `Current free monthly surplus after expenses/SIPs: ₹${Math.max(0, investableNow).toLocaleString('en-IN')}. Gap to required SIP: ₹${shortfall.toLocaleString('en-IN')}/month.`,
     ],
