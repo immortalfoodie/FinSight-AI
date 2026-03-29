@@ -1,0 +1,58 @@
+/** Short, newbie-friendly blurbs for field hints (shown next to labels). */
+export const FIELD_HINTS = {
+  name: 'What we should call you in the app.',
+  currentAge: 'Your age today. Used for how many years you have to invest.',
+  retirementAge: 'Age you want to stop full-time work. Must be after current age.',
+
+  grossSalary: 'Total salary per year before tax, as in your offer letter or Form 16.',
+  basicSalary: 'The “basic” part of salary. Used for HRA and some tax rules.',
+  monthlyIncome: 'Cash that hits your bank each month after PF, tax, etc. (take-home).',
+  monthlyExpenses: 'What you spend each month on rent, food, bills, and fun.',
+  hraReceived: 'House Rent Allowance your employer shows in salary. Put 0 if none.',
+  rentPaid: 'Total rent you pay in a year. Used to see if you can claim HRA.',
+  isMetro: 'Select Yes only if you live in Delhi, Mumbai, Kolkata, or Chennai. This changes HRA tax rules.',
+
+  existingCorpus: 'Money already invested (MFs, stocks, PF not locked in EPF-only, etc.).',
+  emergencyFund: 'Cash or savings you can use in 1–2 days for emergencies.',
+  monthlySIP: 'How much you invest every month in SIPs or recurring investments.',
+
+  lifeInsuranceCover: 'Sum assured on your term/life policies (not ULIP investment value).',
+  healthInsuranceCover: 'Cover amount on health policies for you (and family if one policy).',
+  section80C: 'EPF, ELSS, PPF, tuition fees, etc., up to ₹1.5L under old regime rules.',
+  section80D: 'Health insurance premiums you pay (self, family, parents).',
+  totalEMI: 'All loan EMIs you pay each month (home, car, personal).',
+
+  form16Upload: 'Your employer’s Form 16 PDF. We don’t read it automatically yet — use numbers below.',
+
+  fireCurrentAge: 'Your age now. Longer horizon = more time for investments to grow.',
+  fireRetirementAge: 'When you want to live off investments. Earlier = larger corpus needed.',
+  fireMonthlyIncome: 'Monthly take-home. Minus expenses = what you can save.',
+  fireMonthlyExpenses: 'What you plan to spend each month in retirement in today’s rupees. We inflate this for the years until retirement.',
+  fireExistingCorpus: 'Investments you already have toward retirement.',
+  fireExpectedReturn: 'Annual return you assume (after costs). 10–12% is common for long equity mixes — not guaranteed.',
+  fireInflation: 'How fast costs may rise each year. Higher inflation = bigger FIRE number.',
+  fireSipStepUp: 'You increase SIP by this % each year (salary growth).',
+
+  taxGrossSalary: 'Annual gross from Form 16 Part B (before standard deductions).',
+  taxBasicSalary: 'Basic pay yearly — used for HRA exemption math.',
+  taxHraReceived: 'HRA in salary structure (Part B).',
+  taxRentPaid: 'Total rent paid in the year (with proofs if claiming HRA).',
+  taxMetro: 'Tick if you live in Delhi, Mumbai, Kolkata, or Chennai — affects HRA exemption rules.',
+  tax80C: 'Deductions under 80C: EPF, ELSS, PPF, principal on home loan (conditions apply), etc.',
+  tax80D: 'Medical insurance premiums.',
+  tax80CCD: 'Extra NPS contribution over the 80C limit (up to ₹50k).',
+  tax80TTA: 'Interest from savings account (cap ₹10k in many cases).',
+  taxHomeLoan: 'Interest on home loan for self-occupied house (Section 24), cap as per rules.',
+
+  cpGrossSalary: 'Annual gross salary for this person (Form 16 / payslip).',
+  cpBasicSalary: 'Annual basic component — for HRA calculation.',
+  cpHraReceived: 'Annual HRA from employer.',
+  cpRentPaid: 'Annual rent this person pays (if applicable).',
+  cp80C: 'This person’s 80C investments (EPF, ELSS, etc.).',
+  cp80D: 'Health insurance premium paid for this person / family.',
+  cp80CCD: 'NPS 80CCD(1B) amount.',
+  cpMonthlySIP: 'Monthly mutual fund / investment amount.',
+  cpExistingCorpus: 'Current investable corpus.',
+  cpLifeInsurance: 'Total life cover (sum assured).',
+  cpMetro: 'Choose metro city only for Delhi, Mumbai, Kolkata, or Chennai to apply the right HRA rule.',
+};
