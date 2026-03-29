@@ -1,6 +1,6 @@
-# AI Money Mentor
+# 💸 AI Money Mentor
 
-**Your AI-Powered Personal Finance Advisor** — India's first comprehensive AI personal finance platform offering FIRE planning, tax optimization, portfolio analysis, and more.
+**Your AI-Powered Personal Finance Advisor** — A comprehensive AI personal finance platform offering FIRE planning, tax optimization, portfolio analysis, and more, specifically tailored for the Indian financial context.
 
 ![React](https://img.shields.io/badge/React-19.x-61DAFB?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?logo=vite)
@@ -8,30 +8,33 @@
 
 ## ✨ Features
 
-- **📊 Dashboard** — Get a comprehensive overview of your financial health
-- **🔥 FIRE Planner** — Plan your Financial Independence, Retire Early journey
-- **💰 Tax Wizard** — Smart tax optimization with dual regime comparison
-- **💍 Life Event Advisor** — Financial guidance for major life events
-- **👫 Couples Planner** — Joint financial planning for partners
-- **📈 Portfolio X-Ray** — Deep analysis of your investment portfolio with PDF/image upload support
+- **📊 Dashboard** — Get a comprehensive overview of your financial health, net worth tracking, and recent activity.
+- **🔥 FIRE Planner** — Plan your Financial Independence, Retire Early journey with intelligent inflation and corpus projections.
+- **💰 Tax Wizard** — Smart tax optimization with old vs. new regime comparison based on Indian taxation rules.
+- **💍 Life Event Advisor** — Financial guidance for major life events like marriage, buying a house, or having a child.
+- **👫 Couples Planner** — Joint financial planning for partners, helping align financial goals and budgets.
+- **📈 Portfolio X-Ray** — Deep analysis of your investment portfolio with support for extracting data from uploaded documents.
+- **🛡️ Privacy-First** — All execution, processing, and data storage happens locally in your browser.
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 19 with Vite 8
-- **Charts:** Recharts
+- **Frontend:** React 19, Vite 8
+- **Styling:** Custom Vanilla CSS with a premium dark-mode glassmorphism design system
+- **Charts & Visualization:** Recharts
 - **Icons:** Lucide React
-- **PDF Processing:** pdfjs-dist
-- **OCR:** Tesseract.js
-- **Styling:** Custom CSS with glass-morphism design
+- **Document Processing:** `pdfjs-dist`, `tesseract.js`
 
-## 📋 Prerequisites
+---
 
-Before you begin, ensure you have the following installed:
+## 🚀 Setup & Installation
 
+Follow these steps to get the project up and running on your local machine.
+
+### 📋 Prerequisites
+
+Ensure you have the following installed:
 - **Node.js** (v18.0.0 or higher recommended)
-- **npm** (v9.0.0 or higher) or **yarn**
-
-## 🚀 Getting Started
+- **npm** (comes with Node.js)
 
 ### 1. Clone the Repository
 
@@ -42,105 +45,72 @@ cd eco-gemini-try
 
 ### 2. Install Dependencies
 
+Install all the required npm packages:
+
 ```bash
 npm install
 ```
 
-### 3. Start Development Server
+### 3. Start the Development Server
+
+Run the app in development mode:
 
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173` (or the next available port).
+The application will start and be available at [http://localhost:5173](http://localhost:5173). The page will automatically reload if you make code edits.
 
-### 4. Build for Production
+---
 
-```bash
-npm run build
-```
+## 🔧 Available Commands
 
-The production build will be output to the `dist/` folder.
+In the project directory, you can run:
 
-### 5. Preview Production Build
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Starts the Vite development server with Hot Module Replacement (HMR). |
+| `npm run build` | Builds the app for production to the `dist` folder. It optimizes the build for the best performance. |
+| `npm run preview` | Boots up a local static web server that serves the files from `dist/` to let you preview the production build locally. |
+| `npm run lint` | Runs ESLint to check for code quality and syntax issues. |
 
-```bash
-npm run preview
-```
+---
 
 ## 📁 Project Structure
 
 ```
-├── public/               # Static assets
-│   ├── favicon.svg
-│   └── icons.svg
+eco-gemini-try/
+├── public/                 # Static assets that are copied directly to the build
 ├── src/
-│   ├── agents/           # AI agent logic
-│   ├── assets/           # Images and media
-│   ├── components/       # Reusable UI components
-│   │   ├── AdvisorPanel.jsx
-│   │   ├── AIDisclaimer.jsx
-│   │   ├── OnboardingFlow.jsx
-│   │   ├── Sidebar.jsx
-│   │   └── ...
-│   ├── context/          # React context providers
-│   ├── data/             # Static data and configurations
-│   ├── engine/           # Core calculation engine
-│   ├── pages/            # Main application pages
-│   │   ├── Dashboard.jsx
-│   │   ├── FirePlanner.jsx
-│   │   ├── TaxWizard.jsx
-│   │   ├── LifeEventAdvisor.jsx
-│   │   ├── CouplesPlanner.jsx
-│   │   └── PortfolioXRay.jsx
-│   ├── utils/            # Utility functions
-│   ├── App.jsx           # Main application component
-│   ├── index.css         # Global styles
-│   └── main.jsx          # Application entry point
-├── index.html            # HTML template
-├── vite.config.js        # Vite configuration
-├── eslint.config.js      # ESLint configuration
-└── package.json          # Project dependencies
+│   ├── agents/             # Logic for intelligent agents processing financial data
+│   ├── assets/             # Images, SVGs, and other media
+│   ├── components/         # Reusable UI components (Sidebar, Inputs, Cards, etc.)
+│   ├── context/            # React Contexts (e.g., UserProfileContext for global state)
+│   ├── engine/             # Core calculation engines (Tax, FIRE, Portfolio, Couples)
+│   ├── pages/              # Main application views/pages
+│   ├── utils/              # Helper functions and utilities
+│   ├── App.jsx             # Main application wrapper and routing structure
+│   ├── index.css           # Global vanilla CSS (tokens, utilities, glassmorphism)
+│   └── main.jsx            # Application entry point
+├── eslint.config.js        # ESLint configuration
+├── package.json            # Project dependencies and scripts
+└── vite.config.js          # Vite build configuration
 ```
-
-## 🔧 Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint to check code quality |
-
-## 🔐 Privacy & Data
-
-- **Session-based storage** — Your data stays in your browser session
-- **No server uploads** — All processing happens locally
-- **Privacy-first design** — Your financial data never leaves your device
-
-## 🎨 Design Features
-
-- Dark theme with glass-morphism UI
-- Responsive design for all screen sizes
-- Real-time AI advisor panel
-- System activity logging for transparency
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## ⚠️ Disclaimer
-
-This application provides AI-generated financial guidance for educational purposes only. It does not constitute professional financial advice. Always consult with a qualified financial advisor before making investment decisions.
-
-## 📄 License
-
-This project is private and proprietary.
 
 ---
 
-Built with ❤️ for the Indian financial community
+## 🔐 Privacy & Security
+
+This application prioritizes user data security:
+- **Local Storage Only:** Data is stored using standard browser mechanisms like localStorage/sessionStorage or React Context state.
+- **No Telemetry/Server Uploads:** Processing for document reading, OCR, and financial calculations happens entirely client-side.
+- **Zero-Knowledge Architecture:** Your financial data and credentials never leave your device.
+
+---
+
+## ⚠️ Disclaimer
+
+This application provides AI-generated and algorithm-based financial guidance for educational purposes only. It does not constitute professional financial advice. Always consult with a certified financial planner or tax consultant before making significant investment or tax decisions.
+
+---
+Built with ❤️ for the Indian financial community.
